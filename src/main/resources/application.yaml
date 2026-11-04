@@ -1,0 +1,49 @@
+server:
+  port: 8080
+  shutdown: graceful
+spring:
+  task:
+    scheduling:
+      pool:
+        size: 2
+  application:
+    name: billing
+  datasource:
+    url: ${DATABASE_JDBC_URL}
+    username: ${DATABASE_USER}
+    password: ${DATABASE_PASSWORD}
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 0
+      connection-timeout: 2000
+      validation-timeout: 1000
+  flyway:
+    enabled: true
+    connect-retries: 20
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jws-algorithms: ES256
+          issuer-uri: ${JWT_ISSUER}
+          jwk-set-uri: ${JWKS_URL}
+          audiences: ${JWT_AUDIENCE:hydrosmart-api}
+management:
+  health:
+    db:
+      enabled: false
+    diskspace:
+      enabled: false
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      probes:
+        enabled: true
+      group:
+        readiness:
+          include: readinessState,application,database,rabbitmq
