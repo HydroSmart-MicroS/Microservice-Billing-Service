@@ -6,9 +6,18 @@ DDD: application/internal, domain/model y domain/services, infrastructure, inter
 La base es exclusiva de este contexto. Consultas de configuración y colaboración entre servicios usan RabbitMQ RPC;
 los cambios pasan por outbox y los consumidores confirman después de procesar.
 
-El Dockerfile compila y ejecuta sus pruebas. Iniciar desde la raíz de orquestación con .env privado.
+## Operación en MAIN
 
-[Funcionalidad y arranque](../README.md) · [Guía RabbitMQ](../docs/rabbitmq-guide.md) · [Contratos](../docs/contracts.md).
+En la red de Compose, el servicio escucha en `billing:8080` y utiliza la base `hs_billing`.
+
+| Comprobación | Ruta interna |
+|---|---|
+| Proceso | `GET /actuator/health/liveness` |
+| Disponibilidad | `GET /actuator/health/readiness` |
+
+Readiness verifica PostgreSQL y RabbitMQ. Revisa el resultado en el [panel de MAIN](http://127.0.0.1:8099/). Si un pago sigue pendiente, verifica el resultado del Checkout en Plan y pagos. El estado de la orden y la vigencia de la cuenta se guardan en payment_orders y memberships.
+
+Construye y ejecuta las pruebas del Dockerfile desde este clon con `docker build -t hydrosmart-billing .`. Para la prueba conjunta, ejecuta `./scripts/Test-Local.ps1 -DatabaseMode Hosted` desde la carpeta de orquestación.
 
 ## Aviso de agua pendiente
 
