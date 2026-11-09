@@ -9,11 +9,20 @@ import com.hydrosmart.billing.domain.services.PaymentProvider;
 import com.hydrosmart.billing.shared.infrastructure.messaging.RpcBus;
 @Component
 public class StripeApiPaymentProvider implements PaymentProvider {
- private final String base;private final HttpClient client=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
- public StripeApiPaymentProvider(@Value("${STRIPE_PAYMENT_API_URL:https://apistripefinal.onrender.com}")String base){this.base=base.replaceAll("/+$","");}
+ private final String base;
+ private final String serviceToken;
+ private final HttpClient client=HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
+
+ public StripeApiPaymentProvider(
+     @Value("${STRIPE_PAYMENT_API_URL:https://apistripefinal.onrender.com}") String base,
+     @Value("${STRIPE_PAYMENT_SERVICE_TOKEN:}") String serviceToken) {
+  this.base=base.replaceAll("/+$","");
+  this.serviceToken=serviceToken;
+ }
  @SuppressWarnings("unchecked") private Map<String,Object> send(String path,String method,Map<String,String> headers,Object body){
   try{
    var builder=HttpRequest.newBuilder(URI.create(base+path)).timeout(Duration.ofSeconds(70));
+   if(!serviceToken.isBlank())builder.header("Authorization","Bearer "+serviceToken);
    headers.forEach(builder::header);
    builder.method(method,body==null?HttpRequest.BodyPublishers.noBody():HttpRequest.BodyPublishers.ofString(RpcBus.JSON.writeValueAsString(body)));
    var response=client.send(builder.build(),HttpResponse.BodyHandlers.ofString());
